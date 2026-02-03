@@ -1,12 +1,15 @@
 import { AgentDomainEvent } from '../../domain/agent/AgentDomainEvents';
 import { AgentState } from '../../domain/agent/AgentAggregate';
-import { AgentPresenceEventFact, AgentStatusChangedFact } from '../pipeline/FactBuilder';
+import {
+  AgentPresenceEventRecord,
+  AgentStatusChangedFact,
+} from '../pipeline/FactBuilder';
 
 export type UnitOfWork = {
   agentId: string;
   previousState: AgentState | null;
   newState: AgentState;
   events: AgentDomainEvent[];
-  presenceFacts: AgentPresenceEventFact[];
+  presenceRecords: AgentPresenceEventRecord[];
   statusFact: AgentStatusChangedFact | null;
 };

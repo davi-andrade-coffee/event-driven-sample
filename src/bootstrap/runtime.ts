@@ -8,6 +8,7 @@ export type RuntimeDeps = {
   repository: AgentStateRepository;
   publisher: KafkaPublisherPort;
   statusTopic: string;
+  eventsTopic: string;
   analyticsTopic: string;
   logger: {
     info(message: string, meta?: Record<string, unknown>): void;
@@ -20,13 +21,14 @@ export const startRuntime = ({
   repository,
   publisher,
   statusTopic,
+  eventsTopic,
   analyticsTopic,
   logger,
 }: RuntimeDeps): void => {
   const pipeline = buildPipeline(
     repository,
     publisher,
-    { statusTopic, analyticsTopic },
+    { statusTopic, eventsTopic, analyticsTopic },
     logger,
   );
 

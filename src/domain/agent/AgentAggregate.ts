@@ -1,3 +1,5 @@
+import { AgentDomainEvent } from './AgentDomainEvents';
+
 export type AgentFlags = {
   loginState: boolean;
   pauseState: boolean;
@@ -37,5 +39,54 @@ export const AgentState = {
       lastLogoutAt: null,
       lastPauseEndedAt: null,
     };
+  },
+  apply(state: AgentState, event: AgentDomainEvent): AgentState {
+    switch (event.type) {
+      case 'AgentLoggedIn':
+        return {
+          ...state,
+          flags: {
+            ...state.flags,
+            loginState: true,
+          },
+          lastLoginAt: event.occurredAt,
+        };
+      case 'AgentLoggedOut':
+        return {
+          ...state,
+          flags: {
+            ...state.flags,
+            loginState: false,
+            pauseState: false,
+          },
+          pauseReason: null,
+          pauseStartedAt: null,
+          lastLogoutAt: event.occurredAt,
+        };
+      case 'AgentPaused':
+        return {
+          ...state,
+          flags: {
+            ...state.flags,
+            pauseState: true,
+          },
+          pauseReason: event.pauseReason,
+          pauseStartedAt: event.occurredAt,
+        };
+      case 'AgentExitedPause':
+        return {
+          ...state,
+          flags: {
+            ...state.flags,
+            pauseState: false,
+          },
+          pauseReason: null,
+          pauseStartedAt: null,
+          pauseTotalMs: state.pauseTotalMs + event.pauseDurationMs,
+          lastPauseEndedAt: event.occurredAt,
+        };
+      default:
+        return state;
+    }
   },
 };

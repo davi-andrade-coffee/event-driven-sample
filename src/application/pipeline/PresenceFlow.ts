@@ -13,7 +13,7 @@ import { Clock } from '../../shared/types/Clock';
 
 export type PresenceFlowTopics = {
   statusTopic: string;
-  analyticsTopic: string;
+  eventsTopic: string;
 };
 
 export type PresenceFlowLogger = {
@@ -68,33 +68,28 @@ export class PresenceFlow {
         previousState: current,
         newState: baseState,
         events,
-        presenceFacts: [],
+        presenceRecords: [],
         statusFact: null,
       };
       return Result.ok({ work, persisted: false, publishedStatus: false });
     }
 
-    const newState = events.reduce(AgentDecider.evolve, baseState);
+    const newState = events.reduce(AgentState.apply, baseState);
     const newPresence = AgentPresenceFsm.derivePresenceState(newState.flags);
 
-    const presenceFacts = events.map((event) =>
-      FactBuilder.buildPresenceEventFact(
-        newState,
-        event,
-        this.idGenerator,
-        this.clock,
-      ),
+    const presenceRecords = events.map((event) =>
+      FactBuilder.buildPresenceEventRecord(newState, event, this.idGenerator),
     );
 
     await this.repository.save(agentId, newState);
 
-    for (const fact of presenceFacts) {
-      await this.publisher.publish(this.topics.analyticsTopic, fact);
+    for (const record of presenceRecords) {
+      await this.publisher.publish(this.topics.eventsTopic, record);
       this.logger.info('presenceFlow.publishedPresenceEvent', {
         agentId,
         clientId,
         branchNumber,
-        publishedFactType: fact.eventType,
+        publishedRecordType: record.eventType,
       });
     }
 
@@ -114,7 +109,7 @@ export class PresenceFlow {
         agentId,
         clientId,
         branchNumber,
-        publishedFactType: 'AgentStatusChangedFact',
+        publishedRecordType: 'AgentStatusChangedFact',
       });
     }
 
@@ -123,7 +118,7 @@ export class PresenceFlow {
       previousState: current,
       newState,
       events,
-      presenceFacts,
+      presenceRecords,
       statusFact,
     };
 

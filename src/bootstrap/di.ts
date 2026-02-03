@@ -8,6 +8,7 @@ import { KafkaPublisherPort } from '../ports/messaging/KafkaPublisherPort';
 
 export type RuntimeConfig = {
   statusTopic: string;
+  eventsTopic: string;
   analyticsTopic: string;
 };
 
@@ -29,13 +30,12 @@ export const buildPipeline = (
     publisher,
     idGenerator,
     clock,
-    { statusTopic: config.statusTopic, analyticsTopic: config.analyticsTopic },
+    { statusTopic: config.statusTopic, eventsTopic: config.eventsTopic },
     logger,
   );
   const analyticsFlow = new AnalyticsFlow(
     publisher,
     idGenerator,
-    clock,
     config.analyticsTopic,
     logger,
   );

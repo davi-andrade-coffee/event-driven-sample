@@ -1,6 +1,5 @@
 import { AgentDomainEvent } from '../../domain/agent/AgentDomainEvents';
 import { PresenceState } from '../../domain/agent/AgentPresenceFsm';
-import { AgentQueueMembershipChangedFact } from '../../domain/analytics/AgentQueueAnalyticsFacts';
 import { AnalyticsCanonicalEvent } from '../../domain/analytics/AnalyticsCanonicalEvents';
 import { IdGenerator } from '../../shared/types/IdGenerator';
 import { Clock } from '../../shared/types/Clock';
@@ -16,13 +15,23 @@ export type AgentStatusChangedFact = {
   flags: AgentState['flags'];
 };
 
-export type AgentPresenceEventFact = {
-  factId: string;
+export type AgentPresenceEventRecord = {
+  recordId: string;
   occurredAt: Date;
   clientId: string;
   branchNumber: string;
   eventType: AgentDomainEvent['type'];
   payload: AgentDomainEvent;
+};
+
+export type AgentQueueMembershipEventRecord = {
+  recordId: string;
+  occurredAt: Date;
+  clientId: string;
+  branchNumber: string;
+  queueExternalId: string | null;
+  action: 'ENQUEUE' | 'DEQUEUE';
+  sourceRawType: 'LOGIN' | 'LOGOUT';
 };
 
 export const FactBuilder = {
@@ -43,14 +52,13 @@ export const FactBuilder = {
       flags: agent.flags,
     };
   },
-  buildPresenceEventFact(
+  buildPresenceEventRecord(
     agent: AgentState,
     event: AgentDomainEvent,
     idGenerator: IdGenerator,
-    clock: Clock,
-  ): AgentPresenceEventFact {
+  ): AgentPresenceEventRecord {
     return {
-      factId: idGenerator.generate(),
+      recordId: idGenerator.generate(),
       occurredAt: event.occurredAt,
       clientId: agent.clientId,
       branchNumber: agent.branchNumber,
@@ -58,13 +66,12 @@ export const FactBuilder = {
       payload: event,
     };
   },
-  buildQueueMembershipFact(
+  buildQueueMembershipEventRecord(
     canonical: AnalyticsCanonicalEvent,
     idGenerator: IdGenerator,
-    clock: Clock,
-  ): AgentQueueMembershipChangedFact {
+  ): AgentQueueMembershipEventRecord {
     return {
-      factId: idGenerator.generate(),
+      recordId: idGenerator.generate(),
       occurredAt: canonical.occurredAt,
       clientId: canonical.clientId,
       branchNumber: canonical.branchNumber,

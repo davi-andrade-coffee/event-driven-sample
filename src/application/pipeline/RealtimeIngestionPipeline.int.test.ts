@@ -36,13 +36,12 @@ describe('RealtimeIngestionPipeline integration', () => {
       publisher,
       fixedIdGenerator,
       fixedClock,
-      { statusTopic: 'status-topic', analyticsTopic: 'analytics-topic' },
+      { statusTopic: 'status-topic', eventsTopic: 'events-topic' },
       logger,
     );
     const analyticsFlow = new AnalyticsFlow(
       publisher,
       fixedIdGenerator,
-      fixedClock,
       'analytics-topic',
       logger,
     );
@@ -66,7 +65,7 @@ describe('RealtimeIngestionPipeline integration', () => {
     expect(repository.get).toHaveBeenCalledTimes(1);
     expect(repository.save).toHaveBeenCalledTimes(1);
     expect(publisher.publish).toHaveBeenCalledWith(
-      'analytics-topic',
+      'events-topic',
       expect.objectContaining({ eventType: 'AgentLoggedIn' }),
     );
     expect(publisher.publish).toHaveBeenCalledWith(
@@ -75,7 +74,7 @@ describe('RealtimeIngestionPipeline integration', () => {
     );
   });
 
-  it('data4=true publishes analytics fact without loading snapshot', async () => {
+  it('data4=true publishes analytics event without loading snapshot', async () => {
     const repository: AgentStateRepository = {
       get: jest.fn().mockResolvedValue(null),
       save: jest.fn().mockResolvedValue(undefined),
@@ -90,13 +89,12 @@ describe('RealtimeIngestionPipeline integration', () => {
       publisher,
       fixedIdGenerator,
       fixedClock,
-      { statusTopic: 'status-topic', analyticsTopic: 'analytics-topic' },
+      { statusTopic: 'status-topic', eventsTopic: 'events-topic' },
       logger,
     );
     const analyticsFlow = new AnalyticsFlow(
       publisher,
       fixedIdGenerator,
-      fixedClock,
       'analytics-topic',
       logger,
     );
